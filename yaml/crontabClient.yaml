@@ -2,6 +2,29 @@ apiVersion: "examplecrd.com/v1"
 kind: CronTab
 metadata:
   name: my-new-cron-object
+  labels:
+    d: kbsv1
+    run: book-server
 spec:
-  cronSpec: "* * * * */5"
-  image: my-awesome-cron-image
+  replicas: 4
+  selector:
+    matchLabels:
+      run: book-server
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        run: book-server
+    spec:
+      containers:
+      - args:
+        - -v
+        - -b
+        image: rezoan/api_server:1.0.1
+        imagePullPolicy: IfNotPresent
+        name: book-server
+        ports:
+        - containerPort: 8080
+          protocol: TCP
+  deploymentName: "cron-tab-stupid-deployment"
+status: {}

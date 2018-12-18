@@ -3,7 +3,7 @@ import (
 metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 "k8s.io/apimachinery/pkg/runtime"
 "k8s.io/apimachinery/pkg/runtime/schema"
-crdcntrl "github.com/iamrz1/client-go-practice-ho/pkg/apis/examplecrd.com"
+crdcntrl "github.com/iamrz1/client-go-practice/pkg/apis/examplecrd.com"
 )
 
 // SchemeGroupVersion is group version used to register these objects
