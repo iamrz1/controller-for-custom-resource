@@ -1,0 +1,14 @@
+package: github.com/iamrz1/client-go-practice-ho
+import:
+- package: github.com/appscode/kutil
+- package: k8s.io/api
+  subpackages:
+  - apps/v1
+  - core/v1
+- package: k8s.io/client-go
+  version: v10.0.0
+  subpackages:
+  - kubernetes
+  - tools/clientcmd
+  - util/homedir
+- package: k8s.io/code-generator
