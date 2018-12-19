@@ -39,12 +39,13 @@ func main(){
 	kubeInformerFactory := kubeinformers.NewSharedInformerFactory(clientSet, time.Second*30)
 	exampleInformerFactory := informers.NewSharedInformerFactory(cs, time.Second*30)
 
+	fmt.Println("Instantiate controller.")
 	//instantiate controller
 	controller := croncontrol.NewController(clientSet, cs,
 		kubeInformerFactory.Apps().V1().Deployments(),
 		exampleInformerFactory.Examplecrd().V1().CronTabs())
 
-
+	fmt.Println("Start InformerFactory")
 	// notice that there is no need to run Start methods in a separate goroutine. (i.e. go kubeInformerFactory.Start(stopCh)
 	// Start method is non-blocking and runs all registered informers in a dedicated goroutine.
 	stopCh := signals.SetupSignalHandler()
@@ -52,7 +53,9 @@ func main(){
 	exampleInformerFactory.Start(stopCh)
 
 	fmt.Println("call to client-go goes here")
-	custom_clients.RunClients(*kubeFlag)
+	go custom_clients.CreateClient(cs)
+	go custom_clients.UpdateClient(cs)
+	go custom_clients.DeleteClient(cs)
 
 	//Run controller
 	if err = controller.Run(2, stopCh); err != nil {

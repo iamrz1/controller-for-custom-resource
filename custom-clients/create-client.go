@@ -2,21 +2,15 @@ package custom_clients
 
 import (
 	"fmt"
+	"github.com/iamrz1/client-go-practice/pkg/apis/examplecrd.com/v1"
 	crontabv1 "github.com/iamrz1/controller-for-custom-resource/pkg/apis/examplecrd.com/v1"
 	ct "github.com/iamrz1/controller-for-custom-resource/pkg/client/clientset/versioned"
 	corev1 "k8s.io/api/core/v1"
 	. "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/client-go/tools/clientcmd"
 )
-func RunClients(kubeFlag string){
-	config , err := clientcmd.BuildConfigFromFlags("",kubeFlag)
-	if err != nil {
-		panic(err)
-	}
-	cs, err := ct.NewForConfig(config)
-	if err != nil {
-		panic(err)
-	}
+
+var newct *v1.CronTab
+func CreateClient(cs *ct.Clientset){
 	cron := &crontabv1.CronTab{
 		ObjectMeta: ObjectMeta{
 			Name:"my-cron-tab",
@@ -60,6 +54,9 @@ func RunClients(kubeFlag string){
 	}
 	fmt.Println("Creating cronTab")
 	newct, err := cs.ExamplecrdV1().CronTabs(NamespaceDefault).Create(cron)
+	if err != nil {
+		panic(err)
+	}
 	fmt.Println("cronTab created")
 	fmt.Println("cronTab = ",newct)
 	//time.Sleep(time.Second*15)

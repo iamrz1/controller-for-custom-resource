@@ -1,6 +1,7 @@
 package controllers
 import (
 	"fmt"
+	"log"
 	"time"
 
 	appsv1 "k8s.io/api/apps/v1"
@@ -65,7 +66,7 @@ func NewController(
 	// Add sample-controller types to the default Kubernetes Scheme so Events can be
 	// logged for sample-controller types.
 	utilruntime.Must(ctscheme.AddToScheme(scheme.Scheme))
-	klog.V(4).Info("Creating event broadcaster")
+	log.Println("Creating event broadcaster")
 
 	// Create event broadcaster to setup recorder
 	eventBroadcaster := record.NewBroadcaster()
@@ -85,13 +86,14 @@ func NewController(
 		recorder:	recorder,
 	}
 
-	klog.Info("Setting up event handlers")
+	log.Println("Setting up event handlers")
 	// Set up an event handler for when CronTab resources change
 	ctInformerP.Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{
 		AddFunc: controller.enqueueCronTab,
 		UpdateFunc: func(old, new interface{}) {
 			controller.enqueueCronTab(new)
 		},
+		
 		//DeleteFunc: controller.enqueueCronTab,
 	})
 	// Set up an event handler for when Deployment resources change. This
@@ -137,6 +139,7 @@ func (c *Controller) enqueueCronTab(obj interface{}) {
 // It then enqueues that Foo resource to be processed. If the object does not
 // have an appropriate OwnerReference, it will simply be skipped.
 func (c *Controller) handleObject(obj interface{}) {
+	log.Println("==========================================> handleObject is called.")
 	var object metav1.Object
 	var ok bool
 	if object, ok = obj.(metav1.Object); !ok {
@@ -180,24 +183,24 @@ func (c *Controller) Run(threadiness int, stopCh <-chan struct{}) error {
 	defer c.workqueue.ShutDown()
 
 	// Start the informer factories to begin populating the informer caches
-	klog.Info("Starting CronTab controller")
+	log.Println("Starting CronTab controller")
 
 	// Wait for the caches to be synced before starting workers
-	klog.Info("Waiting for informer caches to sync")
+	log.Println("Waiting for informer caches to sync")
 
 	if ok := cache.WaitForCacheSync(stopCh, c.deploymentsSynced, c.ctSynced); !ok {
 		return fmt.Errorf("failed to wait for caches to sync")
 	}
 
-	klog.Info("Starting workers")
-	// Launch two workers to process Foo resources
+	log.Println("Starting workers")
+	// Launch two workers to process CronTab resources
 	for i := 0; i < threadiness; i++ {
 		go wait.Until(c.runWorker, time.Second, stopCh)
 	}
 
-	klog.Info("Started workers")
+	log.Println("Started workers")
 	<-stopCh
-	klog.Info("Shutting down workers")
+	log.Println("Shutting down workers")
 
 	return nil
 }
@@ -212,7 +215,9 @@ func (c *Controller) runWorker() {
 // attempt to process it, by calling the syncHandler.
 func (c *Controller) processNextWorkItem() bool {
 	obj, shutdown := c.workqueue.Get()
-
+	//Default obj = default/my-cron-tab
+	fmt.Println("ProcessNextWorkItem==============>")
+	fmt.Println(obj)
 	if shutdown {
 		return false
 	}
@@ -233,7 +238,10 @@ func (c *Controller) processNextWorkItem() bool {
 		// workqueue means the items in the informer cache may actually be
 		// more up to date that when the item was initially put onto the
 		// workqueue.
-		if key, ok = obj.(string); !ok {
+		key, ok = obj.(string)
+		//Default => key =  default/my-cron-tab  Okay =  true
+
+		if !ok {
 			// As the item in the workqueue is actually invalid, we call
 			// Forget here else we'd go into a loop of attempting to
 			// process a work item that is invalid.
@@ -242,16 +250,21 @@ func (c *Controller) processNextWorkItem() bool {
 			return nil
 		}
 		// Run the syncHandler, passing it the namespace/name string of the
-		// Foo resource to be synced.
-		if err := c.syncHandler(key); err != nil && c.workqueue.NumRequeues(key)<5 {
+		// CronTab resource to be synced.
+		err := c.syncHandler(key)
+		//default=> err = <nil>
+		if err != nil && c.workqueue.NumRequeues(key)<5 {
 			// Put the item back on the workqueue to handle any transient errors.
+			fmt.Println("Adding o work queue")
 			c.workqueue.AddRateLimited(key)
 			return fmt.Errorf("error syncing '%s': %s, requeuing", key, err.Error())
 		}
 		// Finally, if no error occurs we Forget this item so it does not
 		// get queued again until another change happens.
 		c.workqueue.Forget(obj)
-		klog.Infof("Successfully synced '%s'", key)
+		fmt.Printf("Successfully synced '%s'", key)
+		fmt.Println("")
+		log.Printf("Successfully synced '%s'", key)
 		return nil
 	}(obj)
 
