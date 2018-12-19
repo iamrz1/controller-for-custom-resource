@@ -54,7 +54,9 @@ func main(){
 
 	fmt.Println("call to client-go goes here")
 	go custom_clients.CreateClient(cs)
+	//Update replicas from 2 to 4 after 15 seconds
 	go custom_clients.UpdateClient(cs)
+	//Delete object after 40 seconds
 	go custom_clients.DeleteClient(cs)
 
 	//Run controller

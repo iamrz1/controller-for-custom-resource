@@ -9,7 +9,7 @@ import (
 )
 
 func DeleteClient(cs *ct.Clientset ){
-	time.Sleep(time.Second*120)
+	time.Sleep(time.Second*40)
 	fmt.Println("Deleting cronTab")
 	err := cs.ExamplecrdV1().CronTabs(NamespaceDefault).Delete("my-cron-tab",NewDeleteOptions(0))
 	if err != nil {
