@@ -291,12 +291,10 @@ func (c *Controller) syncHandler(key string) error {
 	}
 
 	// Get the Foo resource with this namespace/name
-	fmt.Println(">>>>>>>>>>>> 01")
 	res, err := c.ctLister.CronTabs(namespace).Get(name)
 	if err != nil {
 		// The Foo resource may no longer exist, in which case we stop
 		// processing.
-		fmt.Println(">>>>>>>>>>>> 02", err.Error())
 		if errors.IsNotFound(err) {
 			utilruntime.HandleError(fmt.Errorf("foo '%s' in work queue no longer exists", key))
 			return nil
@@ -306,8 +304,7 @@ func (c *Controller) syncHandler(key string) error {
 	}
 
 	deploymentName := res.Spec.DeploymentName
-
-	fmt.Println(">>>>>>>>>>>> 03", deploymentName)
+	//deploymentName =  stupid-crontab-deployment-from-client-go
 	if deploymentName == "" {
 		// We choose to absorb the error here as the worker would requeue the
 		// resource otherwise. Instead, the next time the resource is updated
@@ -321,10 +318,9 @@ func (c *Controller) syncHandler(key string) error {
 	deployment, err := c.deploymentsLister.Deployments(res.Namespace).Get(deploymentName)
 	// If the resource doesn't exist, we'll create it
 	if errors.IsNotFound(err) {
-		fmt.Println(">>>>>>>>>>>> 04", err.Error())
+
 		deployment, err = c.kubeclientset.AppsV1().Deployments(res.Namespace).Create(newDeployment(res))
 	}
-	fmt.Println(">>>>>>>>>>>> 05", deployment.Name, deployment.Namespace)
 
 	// If an error occurs during Get/Create, we'll requeue the item so we can
 	// attempt processing again later. This could have been caused by a
@@ -334,8 +330,7 @@ func (c *Controller) syncHandler(key string) error {
 	}
 
 	// If the Deployment is not controlled by this Foo resource, we should log
-	// a warning to the event recorder and ret
-	fmt.Println(">>>>>>>>>>>> 06")
+	// a warning to the event recorder and returns error message
 	if !metav1.IsControlledBy(deployment, res) {
 		msg := fmt.Sprintf("Message: Resource Exists = "+ deployment.Name)
 		fmt.Println(">>>>>>>>>>>> 07", msg)
